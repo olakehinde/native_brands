@@ -6,28 +6,46 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController {
-
     public function validatePayload(Request $request) {
-
-        // dd("I got here");
-        $rules = [];
-        $validationMessages = [];
         $payload = $request->all();
+        $validationErrors = [];
+        $validationRules = [
+            'first_name' => 'alpha|required',
+            'last_name' => 'alpha|required',
+            'email' => 'email',
+            'phone' => 'number'
+        ];
 
-        foreach ($payload as $key => $value) {
-            $rules[$key] = $value['rules'];
-            $validationMessages[$key . '.alpha'] = 'The ' . $key . ' field must be a string.';
-            $validationMessages[$key . '.required'] = 'The ' . $key . ' field is required.';
-            $validationMessages[$key . '.email'] = 'The ' . $key . ' field must be a valid email address.';
-            $validationMessages[$key . '.number'] = 'The ' . $key . ' field must be a number.';
+        foreach ($validationRules as $field => $rules) {
+            $fieldValue = $payload[$field]['value'];
+            $rules = explode("|", $rules);
+
+            foreach ($rules as $rule) {
+                if ($rule === 'required' && empty($fieldValue)) {
+                    $validationErrors[$field][] = 'The ' . $field . ' field is required.';
+                }
+                if ($rule === 'alpha' && !preg_match("/^[A-Za-z]+$/", $fieldValue)) {
+                    $validationErrors[$field][] = 'The ' . $field . ' field must be alphabetic.';
+                }
+                if ($rule === 'email' && !filter_var($fieldValue, FILTER_VALIDATE_EMAIL)) {
+                    $validationErrors[$field][] = 'The ' . $field . ' field must be a valid email address.';
+                }
+                if ($rule === 'number' && !is_numeric($fieldValue)) {
+                    $validationErrors[$field][] = 'The ' . $field . ' field must be a number.';
+                }
+            }
         }
 
-        $validator = Validator::make($payload, $rules, $validationMessages);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        } else {
-            return response()->json(['status' => true]);
+        //check if the validation error is empty i.e. the validation fails
+        if (!empty($validationErrors)) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validationErrors
+            ], 400);
         }
+
+        return response()->json([
+            'status' => true
+        ], 200);
     }
 }

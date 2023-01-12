@@ -17,7 +17,7 @@ class Controller extends BaseController {
         ];
 
         foreach ($validationRules as $field => $rules) {
-            $fieldValue = $payload[$field]['value'];
+            $fieldValue = $payload[$field];
             $rules = explode("|", $rules);
 
             foreach ($rules as $rule) {

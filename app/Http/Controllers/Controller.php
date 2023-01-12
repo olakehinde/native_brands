@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 
-class Controller extends BaseController
-{
-    public function validatePayload(Request $request)
-    {
+class Controller extends BaseController {
+
+    public function validatePayload(Request $request) {
+
+        // dd("I got here");
         $rules = [];
         $validationMessages = [];
         $payload = $request->all();
